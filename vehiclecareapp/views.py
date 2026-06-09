@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -7,15 +8,18 @@ from django.http import JsonResponse
 from django.db.models import Max, Sum
 from django.core.mail import send_mail
 from django.conf import settings
+from dotenv import load_dotenv
 import google.generativeai as genai
+
+load_dotenv()
 
 from .models import MaintenanceRecord
 
 # ==============================================================================
 # 🔑 API KEY CONFIGURATION
 # ==============================================================================
-# Ensure your key is valid at: https://aistudio.google.com/app/apikey
-GOOGLE_API_KEY = "AIzaSyB0hq6ReqzNWBQtahrew7mVFpwBLQz3agw"
+# Loaded from .env file — never hardcode keys in source!
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
 
 try:
     genai.configure(api_key=GOOGLE_API_KEY)

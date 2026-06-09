@@ -1,6 +1,10 @@
 from pathlib import Path
 import os
+# pyrefly: ignore [missing-import]
 import dj_database_url
+from dotenv import load_dotenv
+
+load_dotenv()  # loads variables from .env into os.environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -8,11 +12,35 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 🔐 SECURITY SETTINGS
 # ==============================
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-dev-key")
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-dev-key-change-in-production")
 
-DEBUG = os.environ.get("DEBUG", "True") == "True"
+# Default to False in production; override locally via .env: DEBUG=True
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+# Localhost for dev; Vercel domains + custom domain for production
+_allowed = os.environ.get("ALLOWED_HOSTS", "")
+ALLOWED_HOSTS = _allowed.split(",") if _allowed else [
+    "localhost",
+    "127.0.0.1",
+    ".vercel.app",
+    ".onvercel.app",
+]
+
+# ==============================
+# 🔒 PRODUCTION SECURITY HEADERS
+# ==============================
+
+# Only enforce HTTPS headers when not in DEBUG mode
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = 31536000          # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+X_FRAME_OPTIONS = "DENY"
 
 # ==============================
 # 📦 INSTALLED APPS
@@ -34,7 +62,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # for production static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -66,6 +94,7 @@ WSGI_APPLICATION = 'vehiclecareproject.wsgi.application'
 # 🗄 DATABASE CONFIGURATION
 # ==============================
 
+# Default: SQLite for local development
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -73,10 +102,15 @@ DATABASES = {
     }
 }
 
-# If DATABASE_URL exists (production), override SQLite
+# Production: use DATABASE_URL env var (set in Vercel dashboard)
+# e.g. postgres://user:pass@host/dbname  (Neon, Supabase, etc.)
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
-    DATABASES['default'] = dj_database_url.parse(DATABASE_URL)
+    DATABASES['default'] = dj_database_url.parse(
+        DATABASE_URL,
+        conn_max_age=600,       # keep connections alive for 10 mins
+        conn_health_checks=True,
+    )
 
 # ==============================
 # 🔑 PASSWORD VALIDATION
@@ -108,7 +142,11 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
+# Where `collectstatic` copies files (served by WhiteNoise in production)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise: compress and cache static files with long-lived headers
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # ==============================
 # 📁 MEDIA FILES

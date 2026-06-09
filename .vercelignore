@@ -1,0 +1,33 @@
+# ==============================================================================
+# VehicleCare+ .vercelignore
+# Tells Vercel to skip these files/directories during deployment upload
+# ==============================================================================
+
+# Virtual environment (huge, not needed on Vercel)
+.venv/
+venv/
+env/
+
+# Local database (SQLite not used in production)
+db.sqlite3
+
+# Development secrets (set these in Vercel dashboard instead)
+.env
+
+# Git history
+.git/
+.gitignore
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Collected static (built fresh during vercel build)
+staticfiles/
+
+# Dev tools & docs
+README.md
+Procfile
+*.log

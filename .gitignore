@@ -1,0 +1,36 @@
+# ==============================================================================
+# VehicleCare+ .gitignore
+# ==============================================================================
+
+# 🔐 Environment variables (NEVER commit this!)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Django
+*.sqlite3
+staticfiles/
+media/
+db.sqlite3
+
+# IDE & OS
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
