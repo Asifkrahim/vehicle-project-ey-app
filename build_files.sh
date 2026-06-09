@@ -7,7 +7,7 @@
 set -e  # Exit immediately if any command fails
 
 echo "📦 Installing Python dependencies..."
-pip install -r requirements-vercel.txt
+pip install -r requirements.txt
 
 echo "📂 Collecting static files..."
 python manage.py collectstatic --noinput --clear
