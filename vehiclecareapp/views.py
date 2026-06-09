@@ -61,11 +61,23 @@ def signup_view(request):
         if password != confirm:
             messages.error(request, "Passwords do not match")
             return redirect('signup')
-        if User.objects.filter(username=email).exists():
-            messages.error(request, "Email already exists")
-            return redirect('signup')
-        User.objects.create_user(username=email, email=email, password=password)
-        return redirect('login')
+        try:
+            if User.objects.filter(username=email).exists():
+                messages.error(request, "Email already exists")
+                return redirect('signup')
+            User.objects.create_user(username=email, email=email, password=password)
+            return redirect('login')
+        except Exception as e:
+            import traceback
+            error_detail = traceback.format_exc()
+            print(f"SIGNUP ERROR: {error_detail}")
+            # Temporarily show the real error so we can debug
+            from django.http import HttpResponse
+            return HttpResponse(
+                f"<pre style='padding:20px;background:#1a1a1a;color:#ff6b6b;'>"
+                f"<b>DEBUG ERROR (will be removed after fix):</b>\n\n{error_detail}</pre>",
+                status=500
+            )
     return render(request, "vehiclecareapp/signup.html")
 
 @login_required(login_url='login')
