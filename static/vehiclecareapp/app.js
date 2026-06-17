@@ -303,6 +303,49 @@
     });
   });
 
+  /* ── Custom Delete Confirmation Modal ───────────────────────────────────── */
+  const confirmBackdrop = document.getElementById('confirmBackdrop');
+  const confirmModal    = document.getElementById('confirmModal');
+  const confirmOkBtn    = document.getElementById('confirmOk');
+  const confirmCancelBtn = document.getElementById('confirmCancel');
+  let _pendingDeleteForm = null;
+
+  window.confirmDelete = function (btn) {
+    _pendingDeleteForm = btn.closest('form');
+    if (!_pendingDeleteForm) return;
+    if (confirmBackdrop) confirmBackdrop.classList.add('open');
+    if (confirmModal)    confirmModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  function closeConfirmModal() {
+    if (confirmBackdrop) confirmBackdrop.classList.remove('open');
+    if (confirmModal)    confirmModal.classList.remove('open');
+    document.body.style.overflow = '';
+    _pendingDeleteForm = null;
+  }
+
+  if (confirmOkBtn) {
+    confirmOkBtn.addEventListener('click', function () {
+      if (_pendingDeleteForm) {
+        // Animate card out
+        const card = _pendingDeleteForm.closest('.record-card');
+        if (card) {
+          card.style.transition = 'opacity 0.25s, transform 0.25s';
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.95)';
+          setTimeout(() => _pendingDeleteForm.submit(), 220);
+        } else {
+          _pendingDeleteForm.submit();
+        }
+      }
+      closeConfirmModal();
+    });
+  }
+
+  if (confirmCancelBtn) confirmCancelBtn.addEventListener('click', closeConfirmModal);
+  if (confirmBackdrop)  confirmBackdrop.addEventListener('click', closeConfirmModal);
+
   /* ── Password Toggle (auth pages) ──────────────────────────────────────── */
   document.querySelectorAll('.toggle-pass').forEach(btn => {
     btn.addEventListener('click', function () {

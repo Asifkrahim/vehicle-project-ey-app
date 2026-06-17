@@ -226,7 +226,8 @@ def add_maintenance(request):
 @login_required(login_url='login')
 def delete_record(request, record_id):
     record = get_object_or_404(MaintenanceRecord, id=record_id, user=request.user)
-    record.delete()
+    if request.method == 'POST':
+        record.delete()
     return redirect('dashboard')
 
 def logout_view(request):
