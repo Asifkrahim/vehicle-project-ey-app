@@ -2,321 +2,446 @@
 {% load static %}
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#090909">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="{% static 'manifest.json' %}">
-    <link rel="apple-touch-icon" href="{% static 'icons/icon-192.svg' %}">
-    <title>VehicleCare+ | Dashboard</title>
-    <link rel="stylesheet" href="{% static 'vehiclecareapp/style.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#080808">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="VehicleCare+ Dashboard — Track vehicle health, service history, and get AI maintenance advice.">
+  <link rel="manifest" href="{% static 'manifest.json' %}">
+  <link rel="apple-touch-icon" href="{% static 'icons/icon-192.svg' %}">
+  <title>VehicleCare+ | Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'vehiclecareapp/style.css' %}">
 </head>
-<body>
-    <div class="dashboard">
-        <div class="dashboard-header">
-            <div class="header-info">
-                <h1>VehicleCare+</h1>
-                <p>Welcome, <strong>{{ request.user.username }}</strong></p>
-            </div>
-            <a href="{% url 'logout' %}" class="btn btn-secondary" style="width: auto; padding: 8px 20px; min-height: 40px; margin: 0;">Logout</a>
+<body class="dashboard-body">
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       TOP APP BAR
+       ══════════════════════════════════════════════════════════════════════ -->
+  <header class="app-bar" role="banner">
+    <span class="brand">VehicleCare+</span>
+
+    <div class="app-bar-right">
+      <!-- User avatar with dropdown -->
+      <div class="user-avatar" id="userAvatar" role="button" tabindex="0" aria-label="User menu">
+        {{ request.user.username|slice:":1"|upper }}
+        <div class="avatar-menu" id="avatarMenu" role="menu">
+          <a href="{% url 'logout' %}" role="menuitem">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+          </a>
         </div>
+      </div>
+    </div>
+  </header>
 
-        <div class="stats-grid">
-            <div class="stats-card">
-                <h3>Total Expenses</h3>
-                <div class="value">₹ {{ total_expense|default:"0" }}</div>
-                <p>Lifetime maintenance cost</p>
-            </div>
+  <!-- ══════════════════════════════════════════════════════════════════════
+       MAIN SCROLLABLE CONTENT
+       ══════════════════════════════════════════════════════════════════════ -->
+  <main class="main-content" role="main">
 
-            <div class="stats-card">
-                <div class="mechanic-row">
-                    <div>
-                        <h3>Need Help?</h3>
-                        <p>Find nearest workshops</p>
-                    </div>
-                    <a href="https://www.google.com/maps/search/mechanic+near+me" target="_blank" class="mechanic-btn">
-                        📍 Find
-                    </a>
-                </div>
-            </div>
-        </div>
+    <!-- ─── Stats Strip ─── -->
+    <div class="stats-strip">
+      <div class="stat-chip">
+        <span class="stat-chip-label">Total Spent</span>
+        <span class="stat-chip-value">₹{{ total_expense|default:"0" }}</span>
+        <span class="stat-chip-sub">Lifetime cost</span>
+      </div>
 
-        <div class="section" id="garage">
-            <div class="garage-selector">
-                {% if vehicles %}
-                    {% for car in vehicles %}
-                    <div class="garage-card {% if forloop.first %}active{% endif %}"
-                         onclick="selectCar(this)"
-                         data-brand="{{ car.brand }}"
-                         data-model="{{ car.model }}"
-                         data-number="{{ car.number }}"
-                         data-oil="{{ car.oil_life }}"
-                         data-oil-msg="{{ car.oil_msg }}"
-                         data-brake="{{ car.brake_life }}"
-                         data-brake-msg="{{ car.brake_msg }}"
-                         data-air="{{ car.air_life }}"
-                         data-air-msg="{{ car.air_msg }}"
-                         data-coolant="{{ car.coolant_life }}"
-                         data-coolant-msg="{{ car.coolant_msg }}">
-
-                        <h3>{{ car.brand }} {{ car.model }}</h3>
-                        <p style="color: #ffd700; font-weight: bold;">{{ car.number }}</p>
-                        <p>{{ car.type }} • {{ car.current_odo }} km</p>
-                        <div class="garage-icon">{{ car.icon }}</div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="garage-card">
-                        <h3>No Vehicles</h3>
-                        <p>Add a record below</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="section" id="health">
-            <div class="health-section">
-                <div class="dashboard-card">
-                    <div class="health-header">
-                        <h2>Vehicle Health</h2>
-                        <span class="selected-vehicle-badge" id="selectedCarLabel">Select Vehicle</span>
-                    </div>
-
-                    <div class="health-item">
-                        <div class="health-info"><span>🛢️ Engine Oil</span> <span class="percentage" id="oilPercent">0%</span></div>
-                        <div class="progress-container"><div class="progress-bar" id="oilBar" style="width: 0%;"></div></div>
-                        <small class="health-detail" id="oilMsg">--</small>
-                    </div>
-                    <div class="health-item">
-                        <div class="health-info"><span>🛑 Brake System</span> <span class="percentage" id="brakePercent">0%</span></div>
-                        <div class="progress-container"><div class="progress-bar" id="brakeBar" style="width: 0%;"></div></div>
-                        <small class="health-detail" id="brakeMsg">--</small>
-                    </div>
-                    <div class="health-item">
-                        <div class="health-info"><span>💨 Air Filter</span> <span class="percentage" id="airPercent">0%</span></div>
-                        <div class="progress-container"><div class="progress-bar" id="airBar" style="width: 0%;"></div></div>
-                        <small class="health-detail" id="airMsg">--</small>
-                    </div>
-                    <div class="health-item">
-                        <div class="health-info"><span>❄️ Coolant</span> <span class="percentage" id="coolantPercent">0%</span></div>
-                        <div class="progress-container"><div class="progress-bar" id="coolantBar" style="width: 0%;"></div></div>
-                        <small class="health-detail" id="coolantMsg">--</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section" id="services">
-            <div class="dashboard-grid">
-                <div class="dashboard-card">
-                    <h2>Add Service Record</h2>
-                    <form method="POST" action="{% url 'add_maintenance' %}">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label>Vehicle Details</label>
-                            <div class="form-row">
-                                <input type="text" name="vehicle_brand" placeholder="Brand (e.g. Honda)" required>
-                                <input type="text" name="vehicle_model" placeholder="Model (e.g. Civic)" required>
-                            </div>
-                            <div style="margin-top: 8px;">
-                                <input type="text" name="vehicle_number" placeholder="License Plate (e.g. KL-07-AB-1234)" required style="width: 100%;">
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <select name="vehicle_type" required>
-                                <option value="" disabled selected>Type</option>
-                                <option value="Car">Car</option>
-                                <option value="Bike">Bike</option>
-                            </select>
-                            <select name="maintenance_type" required>
-                                <option value="" disabled selected>Service</option>
-                                <option value="Oil Change">Oil Change</option>
-                                <option value="Brake Inspection">Brake Inspection</option>
-                                <option value="Air Filter">Air Filter</option>
-                                <option value="Coolant Flush">Coolant Flush</option>
-                                <option value="Tire Rotation">Tire Rotation (Car)</option>
-                                <option value="Chain Lube">Chain Lube (Bike)</option>
-                                <option value="Chain Adjustment">Chain Adjustment (Bike)</option>
-                                <option value="Spark Plugs">Spark Plugs</option>
-                                <option value="Battery Check">Battery Check</option>
-                                <option value="Transmission Fluid">Transmission Fluid</option>
-                                <option value="General Service">General Service</option>
-                            </select>
-                        </div>
-
-                        <div class="form-row">
-                            <input type="number" name="odometer_reading" placeholder="Odometer (km)" required>
-                            <input type="number" step="0.01" name="cost" placeholder="Cost (₹)" required>
-                        </div>
-                        <div class="form-row" style="margin-top: 8px;">
-                            <input type="date" name="date" required style="width: 100%;">
-                        </div>
-
-                        <button type="submit" class="btn">Add Record</button>
-                    </form>
-                </div>
-
-                <div class="dashboard-card">
-                    <h2>Recent History</h2>
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Vehicle</th>
-                                    <th>Service</th>
-                                    <th>Cost</th>
-                                    <th>DIY</th>
-                                    <th>Next Due</th>
-                                    <th>Date</th>
-                                    <th style="text-align: center;">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for record in records %}
-                                <tr>
-                                    <td>
-                                        {{ record.vehicle_brand }} {{ record.vehicle_model }}<br>
-                                        <span style="font-size: 0.75em; color: #ffd700;">{{ record.vehicle_number }}</span>
-                                    </td>
-                                    <td>{{ record.maintenance_type }}</td>
-                                    <td style="color: #00C851;">₹{{ record.cost }}</td>
-                                    <td>
-                                        <a href="https://www.youtube.com/results?search_query=how+to+{{ record.maintenance_type }}+{{ record.vehicle_brand }}+{{ record.vehicle_model }}"
-                                           target="_blank"
-                                           style="color: #ff4444; text-decoration: none; font-weight: bold; font-size: 0.85em;">
-                                           ▶ Watch
-                                        </a>
-                                    </td>
-                                    <td style="color: #ffd700;">{{ record.next_service_km }} km</td>
-                                    <td>{{ record.date }}</td>
-                                    <td style="text-align: center;">
-                                        <a href="{% url 'delete_record' record.id %}"
-                                           onclick="return confirm('Delete this record?');"
-                                           style="text-decoration: none; font-size: 1.1em;" title="Delete">🗑️</a>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr><td colspan="7" style="text-align:center; padding: 20px; color:#666;">No records found.</td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <div class="stat-chip workshop-chip">
+        <span class="stat-chip-label">Need Help?</span>
+        <span class="stat-chip-value">🛠️ Workshop</span>
+        <a
+          href="https://www.google.com/maps/search/mechanic+near+me"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="workshop-link"
+          aria-label="Find nearest workshop on Google Maps"
+        >
+          <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" fill="none" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Locate
+        </a>
+      </div>
     </div>
 
-    <button class="chat-btn" onclick="toggleChat()">💬</button>
-    <div class="chat-window" id="chatWindow">
-        <div class="chat-header">
-            <span>🤖 Mechanic AI</span>
-            <span onclick="toggleChat()">✕</span>
+    <!-- ═══════════════════════════════════
+         TAB: GARAGE (Vehicles)
+         ═══════════════════════════════════ -->
+    <section id="garageTab" class="tab-section" aria-label="My Vehicles">
+      <p class="section-title">My Garage</p>
+
+      <div class="garage-scroll" role="list" aria-label="Vehicle cards">
+        {% if vehicles %}
+          {% for car in vehicles %}
+            <div
+              class="garage-card {% if forloop.first %}active{% endif %}"
+              role="listitem"
+              tabindex="0"
+              aria-label="{{ car.brand }} {{ car.model }}"
+              data-brand="{{ car.brand }}"
+              data-model="{{ car.model }}"
+              data-number="{{ car.number }}"
+              data-oil="{{ car.oil_life }}"
+              data-oil-msg="{{ car.oil_msg }}"
+              data-brake="{{ car.brake_life }}"
+              data-brake-msg="{{ car.brake_msg }}"
+              data-air="{{ car.air_life }}"
+              data-air-msg="{{ car.air_msg }}"
+              data-coolant="{{ car.coolant_life }}"
+              data-coolant-msg="{{ car.coolant_msg }}"
+            >
+              <h3>{{ car.brand }} {{ car.model }}</h3>
+              <p class="plate">{{ car.number }}</p>
+              <p class="odo">{{ car.type }} · {{ car.current_odo }} km</p>
+              <div class="garage-card-icon" aria-hidden="true">{{ car.icon }}</div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="garage-card" role="listitem">
+            <h3>No Vehicles</h3>
+            <p class="odo">Tap <strong>+</strong> to add a service record</p>
+            <div class="garage-card-icon" aria-hidden="true">🚗</div>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════
+         TAB: HEALTH
+         ═══════════════════════════════════ -->
+    <section id="healthTab" class="tab-section" aria-label="Vehicle Health">
+      <div class="health-header">
+        <h2>Vehicle Health</h2>
+        <span class="vehicle-badge" id="vehicleBadge" aria-live="polite">Select Vehicle</span>
+      </div>
+
+      <div class="health-card">
+        <!-- Oil -->
+        <div class="health-item">
+          <div class="health-info">
+            <span class="health-label">
+              <span class="health-emoji" aria-hidden="true">🛢️</span>
+              Engine Oil
+            </span>
+            <span class="health-pct" id="oilPct" aria-live="polite">0%</span>
+          </div>
+          <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Engine oil life">
+            <div class="progress-fill" id="oilBar" style="width:0%"></div>
+          </div>
+          <small class="health-msg" id="oilMsg">--</small>
         </div>
-        <div class="chat-body" id="chatBody">
-            <div class="msg bot">Hi! I can help with maintenance schedules, vehicle questions, and more. Ask me anything!</div>
+
+        <!-- Brakes -->
+        <div class="health-item">
+          <div class="health-info">
+            <span class="health-label">
+              <span class="health-emoji" aria-hidden="true">🛑</span>
+              Brake System
+            </span>
+            <span class="health-pct" id="brakePct" aria-live="polite">0%</span>
+          </div>
+          <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Brake life">
+            <div class="progress-fill" id="brakeBar" style="width:0%"></div>
+          </div>
+          <small class="health-msg" id="brakeMsg">--</small>
         </div>
-        <div class="chat-input-area">
-            <input id="chatInput" type="text" placeholder="Ask about oil, brakes...">
-            <button onclick="sendMsg()">➤</button>
+
+        <!-- Air Filter -->
+        <div class="health-item">
+          <div class="health-info">
+            <span class="health-label">
+              <span class="health-emoji" aria-hidden="true">💨</span>
+              Air Filter
+            </span>
+            <span class="health-pct" id="airPct" aria-live="polite">0%</span>
+          </div>
+          <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Air filter life">
+            <div class="progress-fill" id="airBar" style="width:0%"></div>
+          </div>
+          <small class="health-msg" id="airMsg">--</small>
         </div>
+
+        <!-- Coolant -->
+        <div class="health-item">
+          <div class="health-info">
+            <span class="health-label">
+              <span class="health-emoji" aria-hidden="true">❄️</span>
+              Coolant
+            </span>
+            <span class="health-pct" id="coolantPct" aria-live="polite">0%</span>
+          </div>
+          <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Coolant life">
+            <div class="progress-fill" id="coolantBar" style="width:0%"></div>
+          </div>
+          <small class="health-msg" id="coolantMsg">--</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════
+         TAB: HISTORY (Service Records)
+         ═══════════════════════════════════ -->
+    <section id="historyTab" class="tab-section" aria-label="Service History">
+      <p class="section-title">Service History</p>
+
+      <div class="history-list" role="feed" aria-label="Maintenance records">
+        {% for record in records %}
+          <article class="record-card">
+            <div class="record-card-top">
+              <span class="service-badge">{{ record.maintenance_type }}</span>
+              <span class="record-date">{{ record.date }}</span>
+            </div>
+
+            <div class="record-vehicle">
+              {{ record.vehicle_brand }} {{ record.vehicle_model }}
+              <span class="record-plate"> · {{ record.vehicle_number }}</span>
+            </div>
+
+            <div class="record-stats">
+              <div class="record-stat">
+                <span class="record-stat-label">Cost</span>
+                <span class="record-stat-val val-green">₹{{ record.cost }}</span>
+              </div>
+              <div class="record-stat">
+                <span class="record-stat-label">Next Due</span>
+                <span class="record-stat-val val-gold">{{ record.next_service_km }} km</span>
+              </div>
+              <div class="record-stat">
+                <span class="record-stat-label">Odometer</span>
+                <span class="record-stat-val val-white">{{ record.odometer_reading }} km</span>
+              </div>
+            </div>
+
+            <div class="record-card-footer">
+              <a
+                href="https://www.youtube.com/results?search_query=how+to+{{ record.maintenance_type|urlencode }}+{{ record.vehicle_brand|urlencode }}+{{ record.vehicle_model|urlencode }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="diy-link"
+                aria-label="Watch DIY video for {{ record.maintenance_type }}"
+              >
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/></svg>
+                DIY Video
+              </a>
+
+              <a
+                href="{% url 'delete_record' record.id %}"
+                onclick="return confirm('Delete this service record?');"
+                class="delete-btn"
+                aria-label="Delete record for {{ record.maintenance_type }} on {{ record.date }}"
+              >🗑</a>
+            </div>
+          </article>
+
+        {% empty %}
+          <div class="history-empty">
+            <span class="empty-icon">📋</span>
+            No service records yet.<br>
+            Tap <strong style="color:var(--gold)">+</strong> to add your first record.
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       FLOATING ACTION BUTTON (Add Record)
+       ══════════════════════════════════════════════════════════════════════ -->
+  <button class="fab" id="addFab" aria-label="Add service record" aria-haspopup="dialog">
+    +
+  </button>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       BOTTOM NAVIGATION
+       ══════════════════════════════════════════════════════════════════════ -->
+  <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+
+    <!-- Garage -->
+    <button class="nav-item" data-tab="garageTab" aria-label="My Vehicles">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="1" y="11" width="22" height="9" rx="2"/>
+          <path d="M16 11V7a4 4 0 0 0-8 0v4"/>
+          <circle cx="8" cy="18" r="1" fill="currentColor"/>
+          <circle cx="16" cy="18" r="1" fill="currentColor"/>
+          <path d="M3 11l2-6h14l2 6"/>
+        </svg>
+      </span>
+      <span>Garage</span>
+    </button>
+
+    <!-- Health -->
+    <button class="nav-item" data-tab="healthTab" aria-label="Vehicle Health">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      </span>
+      <span>Health</span>
+    </button>
+
+    <!-- History -->
+    <button class="nav-item" data-tab="historyTab" aria-label="Service History">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+      </span>
+      <span>History</span>
+    </button>
+
+    <!-- AI Chat -->
+    <button class="nav-item" data-tab="chatTab" aria-label="AI Mechanic" aria-haspopup="dialog">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/>
+          <circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/>
+          <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <span>AI Chat</span>
+    </button>
+
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       SHARED SHEET BACKDROP
+       ══════════════════════════════════════════════════════════════════════ -->
+  <div class="sheet-backdrop" id="sheetBackdrop" aria-hidden="true"></div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       BOTTOM SHEET: ADD SERVICE RECORD
+       ══════════════════════════════════════════════════════════════════════ -->
+  <div class="bottom-sheet" id="addRecordSheet" role="dialog" aria-modal="true" aria-label="Add Service Record">
+    <div class="sheet-handle" aria-hidden="true"></div>
+
+    <div class="sheet-header">
+      <span class="sheet-title">Add Service Record</span>
+      <button class="sheet-close" data-close-sheet="addRecordSheet" aria-label="Close">✕</button>
     </div>
 
-    <nav class="mobile-bottom-nav">
-        <a class="nav-item active" data-target="#garage" href="#garage">
-            <span class="nav-icon">🚗</span>
-            <span>Vehicles</span>
-        </a>
-        <a class="nav-item" data-target="#health" href="#health">
-            <span class="nav-icon">❤️</span>
-            <span>Health</span>
-        </a>
-        <a class="nav-item" data-target="#services" href="#services">
-            <span class="nav-icon">🔧</span>
-            <span>Services</span>
-        </a>
-        <button class="nav-item" onclick="toggleChat()">
-            <span class="nav-icon">🤖</span>
-            <span>AI Chat</span>
+    <div class="sheet-body">
+      <form method="POST" action="{% url 'add_maintenance' %}" data-loading>
+        {% csrf_token %}
+
+        <!-- Vehicle Details -->
+        <p class="section-title" style="margin-bottom:10px">Vehicle Details</p>
+        <div class="form-row mb-16">
+          <div class="form-group">
+            <label for="vBrand">Brand</label>
+            <input type="text" name="vehicle_brand" id="vBrand" placeholder="e.g. Honda" required autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label for="vModel">Model</label>
+            <input type="text" name="vehicle_model" id="vModel" placeholder="e.g. Civic" required autocomplete="off">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="vNumber">License Plate</label>
+          <input type="text" name="vehicle_number" id="vNumber" placeholder="e.g. KL-07-AB-1234" required autocomplete="off" style="text-transform:uppercase">
+        </div>
+
+        <!-- Service Details -->
+        <p class="section-title" style="margin-bottom:10px;margin-top:20px">Service Details</p>
+        <div class="form-row mb-16">
+          <div class="form-group">
+            <label for="vType">Vehicle Type</label>
+            <select name="vehicle_type" id="vType" required>
+              <option value="" disabled selected>Type</option>
+              <option value="Car">🚗 Car</option>
+              <option value="Bike">🏍️ Bike</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="serviceType">Service</label>
+            <select name="maintenance_type" id="serviceType" required>
+              <option value="" disabled selected>Service</option>
+              <option value="Oil Change">Oil Change</option>
+              <option value="Brake Inspection">Brake Inspection</option>
+              <option value="Air Filter">Air Filter</option>
+              <option value="Coolant Flush">Coolant Flush</option>
+              <option value="Tire Rotation">Tire Rotation (Car)</option>
+              <option value="Chain Lube">Chain Lube (Bike)</option>
+              <option value="Chain Adjustment">Chain Adjustment (Bike)</option>
+              <option value="Spark Plugs">Spark Plugs</option>
+              <option value="Battery Check">Battery Check</option>
+              <option value="Transmission Fluid">Transmission Fluid</option>
+              <option value="General Service">General Service</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Readings -->
+        <div class="form-row mb-16">
+          <div class="form-group">
+            <label for="odoReading">Odometer (km)</label>
+            <input type="number" name="odometer_reading" id="odoReading" placeholder="e.g. 35000" required min="0">
+          </div>
+          <div class="form-group">
+            <label for="cost">Cost (₹)</label>
+            <input type="number" step="0.01" name="cost" id="cost" placeholder="e.g. 1200" required min="0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="serviceDate">Service Date</label>
+          <input type="date" name="date" id="serviceDate" required>
+        </div>
+
+        <button type="submit" class="btn" style="margin-top:20px">
+          <span class="btn-spinner"></span>
+          <span class="btn-text">Save Record</span>
         </button>
-    </nav>
+      </form>
+    </div>
+  </div>
 
-    <script>
-        function toggleChat() {
-            const win = document.getElementById('chatWindow');
-            win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
-        }
+  <!-- ══════════════════════════════════════════════════════════════════════
+       BOTTOM SHEET: AI MECHANIC CHAT
+       ══════════════════════════════════════════════════════════════════════ -->
+  <div class="bottom-sheet" id="chatSheet" role="dialog" aria-modal="true" aria-label="AI Mechanic Chat">
+    <div class="sheet-handle" aria-hidden="true"></div>
 
-        function sendMsg() {
-            var input = document.getElementById('chatInput');
-            var val = input.value.trim();
-            if (!val) return;
-            var body = document.getElementById('chatBody');
-            body.innerHTML += '<div class="msg user">' + val.replace(/</g, '&lt;') + '</div>';
-            input.value = '';
-            body.scrollTop = body.scrollHeight;
-            fetch('/chatbot-response/?message=' + encodeURIComponent(val))
-                .then(function(r) { return r.json(); })
-                .then(function(d) {
-                    body.innerHTML += '<div class="msg bot">' + d.response + '</div>';
-                    body.scrollTop = body.scrollHeight;
-                })
-                .catch(function() {
-                    body.innerHTML += '<div class="msg bot" style="color:red">Connection error.</div>';
-                });
-        }
+    <div class="sheet-header">
+      <span class="sheet-title">🤖 Mechanic AI</span>
+      <button class="sheet-close" data-close-sheet="chatSheet" aria-label="Close chat">✕</button>
+    </div>
 
-        document.getElementById('chatInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendMsg();
-        });
+    <div class="sheet-body">
+      <div class="chat-body" id="chatBody" aria-live="polite" aria-label="Chat messages">
+        <div class="chat-msg bot">
+          Hi! I'm your AI mechanic. Ask me anything about maintenance schedules, costs, DIY tips, or vehicle issues! 🔧
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <input
+          type="text"
+          id="chatInput"
+          placeholder="Ask about oil, brakes, tyres..."
+          autocomplete="off"
+          aria-label="Chat message"
+        >
+        <button class="chat-send-btn" id="chatSendBtn" aria-label="Send message">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2.5">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
 
-        function updateBar(elementId, percentId, msgId, value, msg) {
-            document.getElementById(percentId).innerText = value + '%';
-            document.getElementById(msgId).innerText = msg;
-            var bar = document.getElementById(elementId);
-            bar.style.width = value + '%';
-            if (value < 30) bar.style.background = '#ff4444';
-            else if (value < 60) bar.style.background = '#ffbb33';
-            else bar.style.background = '#00C851';
-        }
-
-        function selectCar(el) {
-            document.querySelectorAll('.garage-card').forEach(function(c) { c.classList.remove('active'); });
-            el.classList.add('active');
-            var brand = el.getAttribute('data-brand');
-            var model = el.getAttribute('data-model');
-            var number = el.getAttribute('data-number');
-            document.getElementById('selectedCarLabel').innerText = brand + ' ' + model + ' (' + number + ')';
-            updateBar('oilBar', 'oilPercent', 'oilMsg', el.getAttribute('data-oil'), el.getAttribute('data-oil-msg'));
-            updateBar('brakeBar', 'brakePercent', 'brakeMsg', el.getAttribute('data-brake'), el.getAttribute('data-brake-msg'));
-            updateBar('airBar', 'airPercent', 'airMsg', el.getAttribute('data-air'), el.getAttribute('data-air-msg'));
-            updateBar('coolantBar', 'coolantPercent', 'coolantMsg', el.getAttribute('data-coolant'), el.getAttribute('data-coolant-msg'));
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var firstCard = document.querySelector('.garage-card.active');
-            if (firstCard) selectCar(firstCard);
-
-            // Bottom nav active state
-            var navItems = document.querySelectorAll('.mobile-bottom-nav .nav-item');
-            navItems.forEach(function(item) {
-                item.addEventListener('click', function() {
-                    navItems.forEach(function(n) { n.classList.remove('active'); });
-                    this.classList.add('active');
-                });
-            });
-        });
-
-        // Close chat on back button
-        window.addEventListener('popstate', function() {
-            var win = document.getElementById('chatWindow');
-            if (win.style.display === 'flex') win.style.display = 'none';
-        });
-    </script>
-    <script src="{% static 'vehiclecareapp/app.js' %}"></script>
+  <script src="{% static 'vehiclecareapp/app.js' %}"></script>
 </body>
 </html>

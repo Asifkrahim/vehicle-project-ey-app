@@ -2,63 +2,113 @@
 {% load static %}
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#090909">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="{% static 'manifest.json' %}">
-    <link rel="apple-touch-icon" href="{% static 'icons/icon-192.svg' %}">
-    <title>VehicleCare+ - Sign Up</title>
-    <link rel="stylesheet" href="{% static 'vehiclecareapp/style.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#080808">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Create your VehicleCare+ account and start tracking vehicle maintenance intelligently.">
+  <link rel="manifest" href="{% static 'manifest.json' %}">
+  <link rel="apple-touch-icon" href="{% static 'icons/icon-192.svg' %}">
+  <title>VehicleCare+ — Create Account</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'vehiclecareapp/style.css' %}">
 </head>
 <body class="auth-page">
-    <div class="container">
-        <div class="car-animation">
-            <div class="car-container">
-                <div class="car-body"></div>
-                <div class="car-top"></div>
-                <div class="wheel left"></div>
-                <div class="wheel right"></div>
-                <div class="headlight"></div>
-            </div>
-        </div>
-        <div class="auth-card">
-            <h1>VehicleCare+</h1>
-            <p class="subtitle">Create Your Account</p>
 
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="error">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
+  <!-- Animated background orbs -->
+  <div class="auth-orb auth-orb-1"></div>
+  <div class="auth-orb auth-orb-2"></div>
+  <div class="auth-orb auth-orb-3"></div>
 
-            <form method="POST">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="signupEmail">Email</label>
-                    <input type="email" name="email" id="signupEmail" required autocomplete="email">
-                </div>
-
-                <div class="form-group">
-                    <label for="signupPassword">Password</label>
-                    <input type="password" name="password" id="signupPassword" required autocomplete="new-password">
-                </div>
-
-                <div class="form-group">
-                    <label for="signupConfirmPassword">Confirm Password</label>
-                    <input type="password" name="confirm_password" id="signupConfirmPassword" required autocomplete="new-password">
-                </div>
-
-                <button type="submit" class="btn">Sign Up</button>
-            </form>
-
-            <a href="{% url 'login' %}" class="btn btn-secondary">Back to Login</a>
-        </div>
+  <div class="auth-inner">
+    <!-- CSS Car Animation -->
+    <div class="car-animation">
+      <div class="car-container">
+        <div class="car-body"></div>
+        <div class="car-top"></div>
+        <div class="wheel left"></div>
+        <div class="wheel right"></div>
+        <div class="headlight"></div>
+      </div>
     </div>
-    <script src="{% static 'vehiclecareapp/app.js' %}"></script>
+
+    <!-- Auth Card -->
+    <div class="auth-card">
+      <div class="brand-row">
+        <span class="brand">VehicleCare+</span>
+      </div>
+      <p class="subtitle">Create Your Account</p>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="msg-error" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST" data-loading>
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label for="signupEmail">Email Address</label>
+          <input
+            type="email"
+            name="email"
+            id="signupEmail"
+            required
+            autocomplete="email"
+            placeholder="you@example.com"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="signupPassword">Password</label>
+          <div class="input-wrap">
+            <input
+              type="password"
+              name="password"
+              id="signupPassword"
+              required
+              autocomplete="new-password"
+              placeholder="Min. 8 characters"
+            >
+            <button type="button" class="toggle-pass" data-target="signupPassword" aria-label="Show password">👁️</button>
+          </div>
+          <!-- Password strength indicator -->
+          <div class="strength-bar-wrap mt-8">
+            <div class="strength-bar" id="strengthBar"></div>
+          </div>
+          <div class="strength-label" id="strengthLabel"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="signupConfirmPassword">Confirm Password</label>
+          <div class="input-wrap">
+            <input
+              type="password"
+              name="confirm_password"
+              id="signupConfirmPassword"
+              required
+              autocomplete="new-password"
+              placeholder="Re-enter password"
+            >
+            <span class="match-indicator" id="matchIndicator" aria-live="polite"></span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn" id="signupBtn">
+          <span class="btn-spinner"></span>
+          <span class="btn-text">Create Account</span>
+        </button>
+      </form>
+
+      <a href="{% url 'login' %}" class="btn btn-secondary mt-8">Back to Login</a>
+    </div>
+  </div>
+
+  <script src="{% static 'vehiclecareapp/app.js' %}"></script>
 </body>
 </html>

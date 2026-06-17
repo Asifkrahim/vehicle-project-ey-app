@@ -2,58 +2,93 @@
 {% load static %}
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#090909">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="{% static 'manifest.json' %}">
-    <link rel="apple-touch-icon" href="{% static 'icons/icon-192.svg' %}">
-    <title>VehicleCare+ - Login</title>
-    <link rel="stylesheet" href="{% static 'vehiclecareapp/style.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#080808">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="VehicleCare+ — Smart Vehicle Maintenance Tracker. Log services, track health, and get AI-powered advice.">
+  <link rel="manifest" href="{% static 'manifest.json' %}">
+  <link rel="apple-touch-icon" href="{% static 'icons/icon-192.svg' %}">
+  <title>VehicleCare+ — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'vehiclecareapp/style.css' %}">
 </head>
 <body class="auth-page">
-    <div class="container">
-        <div class="car-animation">
-            <div class="car-container">
-                <div class="car-body"></div>
-                <div class="car-top"></div>
-                <div class="wheel left"></div>
-                <div class="wheel right"></div>
-                <div class="headlight"></div>
-            </div>
-        </div>
-        <div class="auth-card">
-            <h1>VehicleCare+</h1>
-            <p class="subtitle">Your Smart Vehicle Maintenance Tracker</p>
 
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="error">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
+  <!-- Animated background orbs -->
+  <div class="auth-orb auth-orb-1"></div>
+  <div class="auth-orb auth-orb-2"></div>
+  <div class="auth-orb auth-orb-3"></div>
 
-            <form method="POST">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="loginEmail">Email</label>
-                    <input type="email" name="email" id="loginEmail" required autocomplete="email">
-                </div>
-
-                <div class="form-group">
-                    <label for="loginPassword">Password</label>
-                    <input type="password" name="password" id="loginPassword" required autocomplete="current-password">
-                </div>
-
-                <button type="submit" class="btn">Login</button>
-            </form>
-
-            <a href="{% url 'signup' %}" class="btn btn-secondary">Create Account</a>
-        </div>
+  <div class="auth-inner">
+    <!-- CSS Car Animation -->
+    <div class="car-animation">
+      <div class="car-container">
+        <div class="car-body"></div>
+        <div class="car-top"></div>
+        <div class="wheel left"></div>
+        <div class="wheel right"></div>
+        <div class="headlight"></div>
+      </div>
     </div>
-    <script src="{% static 'vehiclecareapp/app.js' %}"></script>
+
+    <!-- Auth Card -->
+    <div class="auth-card">
+      <div class="brand-row">
+        <span class="brand">VehicleCare+</span>
+      </div>
+      <p class="subtitle">Your Smart Maintenance Tracker</p>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="msg-error" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST" data-loading>
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label for="loginEmail">Email Address</label>
+          <input
+            type="email"
+            name="email"
+            id="loginEmail"
+            required
+            autocomplete="email"
+            placeholder="you@example.com"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <div class="input-wrap">
+            <input
+              type="password"
+              name="password"
+              id="loginPassword"
+              required
+              autocomplete="current-password"
+              placeholder="••••••••"
+            >
+            <button type="button" class="toggle-pass" data-target="loginPassword" aria-label="Show password">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn" id="loginBtn">
+          <span class="btn-spinner"></span>
+          <span class="btn-text">Login</span>
+        </button>
+      </form>
+
+      <a href="{% url 'signup' %}" class="btn btn-secondary mt-8">Create Account</a>
+    </div>
+  </div>
+
+  <script src="{% static 'vehiclecareapp/app.js' %}"></script>
 </body>
 </html>

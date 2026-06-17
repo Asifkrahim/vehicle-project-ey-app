@@ -23,8 +23,10 @@ GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
 
 try:
     genai.configure(api_key=GOOGLE_API_KEY)
+    _AI_MODEL = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
     print(f"⚠️ API CONFIG ERROR: {e}")
+    _AI_MODEL = None
 
 # --- GLOBAL INTERVAL CONFIGURATION ---
 CAR_INTERVALS = {
@@ -69,15 +71,9 @@ def signup_view(request):
             return redirect('login')
         except Exception as e:
             import traceback
-            error_detail = traceback.format_exc()
-            print(f"SIGNUP ERROR: {error_detail}")
-            # Temporarily show the real error so we can debug
-            from django.http import HttpResponse
-            return HttpResponse(
-                f"<pre style='padding:20px;background:#1a1a1a;color:#ff6b6b;'>"
-                f"<b>DEBUG ERROR (will be removed after fix):</b>\n\n{error_detail}</pre>",
-                status=500
-            )
+            print(f"SIGNUP ERROR: {traceback.format_exc()}")
+            messages.error(request, "An error occurred during signup. Please try again.")
+            return redirect('signup')
     return render(request, "vehiclecareapp/signup.html")
 
 @login_required(login_url='login')
@@ -144,8 +140,10 @@ def chatbot_response(request):
         return JsonResponse({'response': "I'm listening..."})
 
     try:
-        # 1. Initialize Model
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # Use pre-configured global model
+        model = _AI_MODEL
+        if model is None:
+            return JsonResponse({'response': "AI service not configured. Check GOOGLE_API_KEY."})
         
         # 2. System Instruction
         prompt = (
